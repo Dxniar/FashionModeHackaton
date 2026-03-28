@@ -13,6 +13,8 @@ export function ProductionScreen({ orders, onSetStatus }: ProductionScreenProps)
     <View style={styles.wrapper}>
       <View style={styles.block}>
         <Text style={styles.title}>ОЧЕРЕДЬ ЦЕХА</Text>
+        <Text style={styles.counter}>ЗАДАЧ В ОЧЕРЕДИ: {queue.length}</Text>
+
         {queue.length === 0 ? (
           <Text style={styles.muted}>НЕТ АКТИВНЫХ ЗАДАЧ</Text>
         ) : (
@@ -35,6 +37,7 @@ const styles = StyleSheet.create({
   wrapper: { gap: 12 },
   block: { borderWidth: 1, borderColor: '#000', padding: 12, gap: 8 },
   title: { fontSize: 16, fontWeight: '700', letterSpacing: 1.2 },
+  counter: { fontSize: 12, letterSpacing: 1.1, opacity: 0.75 },
   card: { borderWidth: 1, borderColor: '#000', padding: 12, gap: 8 },
   orderName: { fontWeight: '700' },
   muted: { opacity: 0.7 },

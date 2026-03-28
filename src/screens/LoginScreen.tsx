@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import type { AppSession, UserRole } from '../types';
 
 interface LoginScreenProps {
@@ -13,42 +13,46 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
   const [role, setRole] = useState<UserRole>('CLIENT');
 
   return (
-    <View style={styles.card}>
-      <Text style={styles.kicker}>AVISHU SUPERAPP</Text>
-      <Text style={styles.title}>LOGIN</Text>
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.container}>
+      <View style={styles.card}>
+        <Text style={styles.kicker}>AVISHU SUPERAPP</Text>
+        <Text style={styles.title}>LOGIN</Text>
 
-      <Text style={styles.label}>USER NAME</Text>
-      <TextInput
-        value={name}
-        onChangeText={setName}
-        placeholder="ENTER NAME"
-        style={styles.input}
-        placeholderTextColor="#777"
-      />
+        <Text style={styles.label}>USER NAME</Text>
+        <TextInput
+          value={name}
+          onChangeText={setName}
+          placeholder="ENTER NAME"
+          style={styles.input}
+          placeholderTextColor="#777"
+          autoCapitalize="characters"
+        />
 
-      <Text style={styles.label}>ROLE</Text>
-      <View style={styles.rolesRow}>
-        {roles.map((item) => (
-          <Pressable key={item} style={[styles.roleButton, item === role && styles.roleButtonActive]} onPress={() => setRole(item)}>
-            <Text style={[styles.roleText, item === role && styles.roleTextActive]}>{item}</Text>
-          </Pressable>
-        ))}
+        <Text style={styles.label}>ROLE</Text>
+        <View style={styles.rolesRow}>
+          {roles.map((item) => (
+            <Pressable key={item} style={[styles.roleButton, item === role && styles.roleButtonActive]} onPress={() => setRole(item)}>
+              <Text style={[styles.roleText, item === role && styles.roleTextActive]}>{item}</Text>
+            </Pressable>
+          ))}
+        </View>
+
+        <Pressable
+          style={styles.submit}
+          onPress={() => {
+            if (!name.trim()) return;
+            onLogin({ name: name.trim().toUpperCase(), role });
+          }}
+        >
+          <Text style={styles.submitText}>ENTER</Text>
+        </Pressable>
       </View>
-
-      <Pressable
-        style={styles.submit}
-        onPress={() => {
-          if (!name.trim()) return;
-          onLogin({ name: name.trim().toUpperCase(), role });
-        }}
-      >
-        <Text style={styles.submitText}>ENTER</Text>
-      </Pressable>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
+  container: { flex: 1, justifyContent: 'center' },
   card: { borderWidth: 1, borderColor: '#000', padding: 16, gap: 10 },
   kicker: { fontSize: 11, letterSpacing: 1.5 },
   title: { fontSize: 28, fontWeight: '700', letterSpacing: 1.6 },

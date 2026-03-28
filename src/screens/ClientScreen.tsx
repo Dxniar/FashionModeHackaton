@@ -14,6 +14,9 @@ const products = [
   { id: '3', name: 'MONOCHROME SHIRT', type: 'IN_STOCK' as const },
 ];
 
+const trackerSteps = ['PLACED', 'SEWING', 'DONE'] as const;
+const sequence = ['PLACED', 'IN_PROGRESS', 'SEWING', 'DONE'] as const;
+
 const orderStatusLabel: Record<Order['status'], string> = {
   PLACED: 'ОФОРМЛЕН',
   IN_PROGRESS: 'В РАБОТЕ',
@@ -42,13 +45,14 @@ export function ClientScreen({ orders, currentClientName, onCreateOrder }: Clien
         {products.map((product) => (
           <View key={product.id} style={styles.card}>
             <Text style={styles.itemTitle}>{product.name}</Text>
+            <Text style={styles.muted}>{product.type === 'IN_STOCK' ? 'В НАЛИЧИИ' : 'ПРЕДЗАКАЗ'}</Text>
             {product.type === 'IN_STOCK' ? (
               <Pressable style={styles.btn} onPress={() => void onCreateOrder(product.name, 'IN_STOCK', null)}>
                 <Text style={styles.btnText}>КУПИТЬ</Text>
               </Pressable>
             ) : (
               <Pressable style={styles.btn} onPress={() => setSelectedPreorder(product.name)}>
-                <Text style={styles.btnText}>ПРЕДЗАКАЗ</Text>
+                <Text style={styles.btnText}>ОФОРМИТЬ ПРЕДЗАКАЗ</Text>
               </Pressable>
             )}
           </View>
@@ -61,6 +65,16 @@ export function ClientScreen({ orders, currentClientName, onCreateOrder }: Clien
           <>
             <Text style={styles.itemTitle}>{activeOrder.product_name}</Text>
             <Text style={styles.muted}>{orderStatusLabel[activeOrder.status]}</Text>
+            <View style={styles.trackerRow}>
+              {trackerSteps.map((step) => {
+                const active = sequence.indexOf(activeOrder.status) >= sequence.indexOf(step);
+                return (
+                  <View key={step} style={[styles.stepBadge, active && styles.stepBadgeActive]}>
+                    <Text style={[styles.stepText, active && styles.stepTextActive]}>{orderStatusLabel[step]}</Text>
+                  </View>
+                );
+              })}
+            </View>
           </>
         ) : (
           <Text style={styles.muted}>НЕТ АКТИВНЫХ ЗАКАЗОВ</Text>
@@ -72,7 +86,7 @@ export function ClientScreen({ orders, currentClientName, onCreateOrder }: Clien
         <View style={styles.progressTrack}>
           <View style={[styles.progressFill, { width: `${progress}%` }]} />
         </View>
-        <Text style={styles.muted}>{doneOrders}/5</Text>
+        <Text style={styles.muted}>{doneOrders}/5 заказов до бонуса</Text>
       </View>
 
       <Modal visible={Boolean(selectedPreorder)} transparent animationType="fade">
@@ -98,7 +112,13 @@ export function ClientScreen({ orders, currentClientName, onCreateOrder }: Clien
             >
               <Text style={styles.btnText}>ПОДТВЕРДИТЬ</Text>
             </Pressable>
-            <Pressable style={styles.btnGhost} onPress={() => setSelectedPreorder(null)}>
+            <Pressable
+              style={styles.btnGhost}
+              onPress={() => {
+                setSelectedPreorder(null);
+                setReadyDate('');
+              }}
+            >
               <Text style={styles.btnGhostText}>ОТМЕНА</Text>
             </Pressable>
           </View>
@@ -123,6 +143,11 @@ const styles = StyleSheet.create({
   muted: { opacity: 0.7 },
   progressTrack: { height: 14, borderWidth: 1, borderColor: '#000' },
   progressFill: { height: '100%', backgroundColor: '#000' },
+  trackerRow: { flexDirection: 'row', gap: 6, flexWrap: 'wrap' },
+  stepBadge: { borderWidth: 1, borderColor: '#000', paddingVertical: 5, paddingHorizontal: 8 },
+  stepBadgeActive: { backgroundColor: '#000' },
+  stepText: { fontSize: 11, letterSpacing: 1 },
+  stepTextActive: { color: '#fff' },
   modalBg: { flex: 1, backgroundColor: 'rgba(0,0,0,0.55)', justifyContent: 'center', padding: 16 },
   modalCard: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#000', padding: 14, gap: 8 },
   input: { borderWidth: 1, borderColor: '#000', paddingHorizontal: 10, paddingVertical: 9 },
