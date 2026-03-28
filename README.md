@@ -1,64 +1,74 @@
-# AVISHU Superapp MVP (Hackathon)
+# AVISHU Superapp MVP (React + Supabase)
 
-Репозиторий содержит **техническую основу MVP** для хакатона AVISHU: роли, сквозной сценарий, структуру БД, архитектуру, критерии приемки и план демонстрации.
+MVP мобильного супераппа AVISHU с ролевым интерфейсом:
 
-## 1) Цель MVP
+- **CLIENT** — витрина, заказ/предзаказ, трекинг и лояльность.
+- **FRANCHISEE** — дашборд и real-time канбан заказов.
+- **PRODUCTION** — промышленный интерфейс цеха с крупной кнопкой завершения.
 
-Показать сквозной процесс в реальном времени:
+## Что реализовано
 
-1. Клиент создает заказ.
-2. Франчайзи видит заказ и переводит его в работу.
-3. Производство получает задачу и завершает ее.
-4. Клиент автоматически видит статус **ГОТОВО**.
+- Единый экран входа и маршрутизация по роли.
+- Сквозной workflow: `PLACED → IN_PROGRESS → SEWING → DONE`.
+- Real-time синхронизация через Supabase Realtime (`postgres_changes`).
+- Черно-белый премиальный UI (минимализм, верхний регистр, тонкие линии).
+- Fallback-режим без Supabase (локальное хранилище + BroadcastChannel) для быстрой демо-проверки.
 
-## 2) Роли в едином приложении
+## Стек
 
-- **CLIENT** — витрина, предзаказ, трекинг заказа, лояльность.
-- **FRANCHISEE** — дашборд и канбан заказов с real-time обновлениями.
-- **PRODUCTION** — промышленный планшетный режим с крупной кнопкой завершения этапа.
+- React + TypeScript + Vite
+- Supabase (Database + Realtime)
 
-## 3) Рекомендуемый стек
-
-- Frontend: React + TypeScript + Tailwind (PWA) или Flutter.
-- BaaS: Firebase (Auth + Firestore + Realtime listeners).
-- State management: Zustand / Redux Toolkit.
-
-## 4) Минимальная структура проекта
-
-```text
-/docs
-  architecture.md
-  database-schema.md
-  user-flows.md
-  test-scenario.md
-```
-
-## 5) Запуск (для будущей реализации)
-
-После добавления фронтенд-приложения:
+## Быстрый старт
 
 ```bash
 npm install
+cp .env.example .env
 npm run dev
 ```
 
-Или для Flutter:
+Откройте `http://localhost:5173`.
 
-```bash
-flutter pub get
-flutter run
+## Настройка Supabase
+
+1. Создайте проект в Supabase.
+2. Выполните SQL из `supabase-schema.sql` в SQL Editor.
+3. Скопируйте `Project URL` и `anon key` в `.env`:
+
+```env
+VITE_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
+VITE_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
 ```
 
-## 6) Что уже описано в репозитории
+4. Убедитесь, что Realtime включен для таблицы `orders`.
 
-- Архитектура и роли: `docs/architecture.md`
-- Firestore модель данных и статусы: `docs/database-schema.md`
-- User flow по ролям: `docs/user-flows.md`
-- Сквозной тестовый сценарий для демо: `docs/test-scenario.md`
+## Демо сквозного сценария
 
-## 7) Definition of Done (MVP)
+1. Откройте приложение в 3 вкладках/устройствах.
+2. Войдите как CLIENT / FRANCHISEE / PRODUCTION.
+3. CLIENT создает заказ.
+4. FRANCHISEE принимает (`IN_PROGRESS`) и отправляет в цех (`SEWING`).
+5. PRODUCTION нажимает **ЗАВЕРШИТЬ** (`DONE`).
+6. CLIENT видит обновленный статус автоматически.
 
-- Реализована ролевая маршрутизация после логина.
-- Статусы заказа меняются без перезагрузки экрана.
-- Весь путь CLIENT → FRANCHISEE → PRODUCTION → CLIENT демонстрируется за 2–3 минуты.
-- UI соблюдает черно-белый премиальный минимализм.
+## Структура
+
+```text
+src/
+  components/
+    LoginScreen.tsx
+    ClientView.tsx
+    FranchiseeView.tsx
+    ProductionView.tsx
+  lib/
+    supabase.ts
+    ordersApi.ts
+  App.tsx
+  styles.css
+  types.ts
+supabase-schema.sql
+```
+
+## Замечание по безопасности
+
+В `supabase-schema.sql` включена открытая MVP policy для хакатона. Перед продом обязательно внедрить строгий RLS с Auth + role-based policies.
